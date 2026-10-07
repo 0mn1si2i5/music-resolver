@@ -1,0 +1,30 @@
+services:
+  resolver:
+    build: .
+    container_name: music-resolver
+    env_file:
+      - .env
+    environment:
+      - NETEASE_API_BASE_URL=http://netease:3000
+    ports:
+      - "127.0.0.1:8788:8788"
+    volumes:
+      - resolver-data:/app/data
+    depends_on:
+      netease:
+        condition: service_healthy
+    restart: unless-stopped
+
+  netease:
+    image: moefurina/ncm-api:latest
+    container_name: music-resolver-netease
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  resolver-data:

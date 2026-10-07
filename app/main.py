@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
@@ -13,24 +13,19 @@ logger = logging.getLogger(__name__)
 
 limiter = Limiter(key_func=get_remote_address)
 
-app = FastAPI(title="Side B API", version="0.1.0")
+app = FastAPI(title="Music Resolver", version="0.2.0")
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Server-to-server callers need no CORS; browsers only get access to listed origins.
 origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",") if origin.strip()]
-if not origins:
-    logger.warning("CORS_ORIGINS is empty; falling back to wildcard for development. Set CORS_ORIGINS explicitly in production.")
-    origins = ["*"]
-# allow_credentials=True with origins=["*"] is a security violation;
-# when origins is wildcard, credentials must be False.
-allow_credentials = "*" not in origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=allow_credentials,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["*"],
+    )
 
 
 @app.exception_handler(Exception)
@@ -55,13 +50,9 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-from app.routers import auth, resolve, rooms, users, ws
+from app.routers import resolve
 
-app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(resolve.router, prefix="/api", tags=["resolve"])
-app.include_router(rooms.router, prefix="/api/rooms", tags=["rooms"])
-app.include_router(users.router, prefix="/api/users", tags=["users"])
-app.include_router(ws.router, prefix="/ws", tags=["websocket"])
 
 
 if __name__ == "__main__":

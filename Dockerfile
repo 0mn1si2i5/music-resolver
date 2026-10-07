@@ -11,18 +11,18 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy entire backend directory
+# Copy the module
 # The sys.path hack in app/services/resolver_service.py needs
 # root-level routes/ and services/ directories accessible at /app/
 COPY . /app/
 
 # Create non-root user and data directory for SQLite
-RUN groupadd -r sideb && \
-    useradd -r -g sideb -d /app -s /sbin/nologin sideb && \
+RUN groupadd -r resolver && \
+    useradd -r -g resolver -d /app -s /sbin/nologin resolver && \
     mkdir -p /app/data && \
-    chown -R sideb:sideb /app/data
+    chown -R resolver:resolver /app/data
 
-USER sideb
+USER resolver
 
 EXPOSE 8788
 
