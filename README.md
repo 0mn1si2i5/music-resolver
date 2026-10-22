@@ -2,11 +2,13 @@
 
 把任意一条音乐链接（Spotify / Apple Music / 网易云音乐 / QQ 音乐链接，或带前后文的分享文案）解析成规范曲目，并补全另外三个平台的对应链接。
 
+A small FastAPI service that turns a music link (Spotify, Apple Music, NetEase Cloud Music or QQ Music, or a share text containing one) into a canonical track and finds the matching links on the other three platforms.
+
 从 [Side B](https://github.com/0mn1si2i5/Side-B) 的 `backend/` 拆出，保留了相关提交历史；房间、聊天、账号和 WebSocket 部分已移除，不再需要 `JWT_SECRET` 或数据库迁移。
 
 ## 使用方
 
-- **Pox Daily Music**：通过 `POX_MUSIC_SIDEB_BASE_URL` 调用，生产环境以 systemd 服务跑在 Pox 主机的 `127.0.0.1:8788`。
+- Pox（个人 agent）的每日推歌：给推荐的歌补全四个平台的链接。和 Pox 部署在同一台主机，只监听 `127.0.0.1:8788`。
 
 ## 接口
 
@@ -33,6 +35,8 @@ uv venv -p 3.12 .venv && uv pip install -p .venv -r requirements-dev.txt
 
 ## 与 Side B 的对应关系
 
-`git filter-repo` 改写了提交哈希。Pox 生产基线 Side B `e34a85f` 对应本仓库 `e32b758`。
+`git filter-repo` 改写了提交哈希。Side B 的 `e34a85f` 对应本仓库 `e32b758`，Side B 最后一个提交 `0dbe9f7` 对应本仓库 `9285301`。Side B 已归档，之后的改动只在本仓库进行。
 
-Pox 主机上的服务目前仍从 Side B 仓库部署。迁移到本仓库时：部署目录换成本仓库，`.env` 去掉 `JWT_*`、`DATABASE_URL`，systemd 启动命令不再跑 `alembic`；`POX_MUSIC_SIDEB_BASE_URL` 不变。
+## 许可证
+
+[GPL-3.0-or-later](LICENSE)。运行时依赖 `qqmusic-api-python`（GPL-3.0-or-later），其他第三方说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
